@@ -1,0 +1,24 @@
+[package]
+name = "rdfwalk"
+version = "0.9.0"
+edition = "2024"
+authors = ["Frédérik Bilhaut <frederik.bilhaut@gmail.com>"]
+license = "GPL-3.0"
+keywords = ["RDF", "SPARQL", "TUI", "Browser"]
+readme = "./Readme.md"
+description = "A terminal UI for browsing RDF data through a SPARQL endpoint"
+homepage = "https://github.com/fbilhaut/rdfwalk"
+repository = "https://github.com/fbilhaut/rdfwalk"
+documentation = "https://docs.rs/rdfwalk/"
+
+[dependencies]
+ratatui = "0.29"
+crossterm = "0.28"
+oxrdf = "0.2"
+sparesults = "0.2"
+reqwest = { version = "0.12", features = ["blocking"] }
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+confy = "0.6"
+serde = { version = "1", features = ["derive"] }
+arboard = "3"
