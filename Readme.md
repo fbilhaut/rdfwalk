@@ -65,6 +65,20 @@ A free-form SPARQL query editor. Type any SELECT query and press `Enter` to run 
 
 `Tab` toggles focus between the input field and the results list.
 
+Editor keybindings (input mode):
+
+| Key | Action |
+|-----|--------|
+| `Enter` | Run query |
+| `Ctrl+U` | Clear editor and results |
+| `Ctrl+C` | Copy query to clipboard |
+| `Ctrl+V` | Paste from clipboard at cursor |
+| `←` / `→` | Move cursor |
+| `Tab` | Switch to results |
+| `Esc` | Back to Browser |
+
+If a query fails, the full error message is displayed in the results panel.
+
 ### Search
 
 A literal text search. Type a string and press `Enter` to find all triples whose object literal contains that string, case-insensitive. Results show the matching resource, property, and matched value. Pressing `Enter` on a result navigates to the resource.
