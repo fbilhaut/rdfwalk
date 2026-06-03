@@ -12,7 +12,7 @@ repository = "https://github.com/fbilhaut/rdfwalk"
 documentation = "https://docs.rs/rdfwalk/"
 
 [features]
-default = ["local"]
+default = []
 local = ["dep:spareval", "dep:spargebra", "dep:oxrdfio"]
 
 [dependencies]
