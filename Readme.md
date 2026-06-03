@@ -32,6 +32,13 @@ Supported file formats: NTriples (`.nt`), Turtle (`.ttl`), N3 (`.n3`), RDF/XML (
 
 If no starting URI is given, the tool opens on the Types view. If a URI is given, it opens directly on that resource in the Browser view.
 
+**Options:**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--local <file>` | — | Browse a local RDF file instead of a remote endpoint (requires `--features local`) |
+| `--limit <n>` | 1000 | Maximum rows returned per query |
+
 ## Views
 
 ### Browser
@@ -117,7 +124,7 @@ Literals are shown without quotes. The datatype or language tag is displayed in 
 
 ## Known limitations
 
-* All results are currently limited to 1000 rows per page/query (paging will be added in the future).
+* Results are limited to `--limit` rows per query (default: 1000). Paging will be added in the future.
 * Prefixes are currently limited to the mentioned built-ins.
 * Full-text search is currently limited to case-insensitive partial match (uses plain `CONTAINS(LCASE(...))` clause)
 

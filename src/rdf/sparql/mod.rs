@@ -4,8 +4,6 @@ use oxrdf::{Literal, NamedNode, Term};
 mod remote;
 #[cfg(feature = "local")] mod local;
 
-const LIMIT: usize = 1000; // TODO: pagination
-
 pub struct QueryResult {
     pub variables: Vec<String>,
     pub rows: Vec<Vec<Option<Term>>>,
@@ -27,21 +25,28 @@ pub trait SparqlBackend: Send + Sync {
 // Public facade
 pub struct SparqlClient {
     backend: Box<dyn SparqlBackend>,
+    limit: usize,
 }
 
 impl SparqlClient {
     pub fn remote(endpoint: String) -> Self {
-        Self { backend: Box::new(remote::RemoteBackend::new(endpoint)) }
+        Self { backend: Box::new(remote::RemoteBackend::new(endpoint)), limit: 1000 }
     }
 
     #[cfg(feature = "local")]
     pub fn local(path: &str) -> Result<Self> {
-        Ok(Self { backend: Box::new(local::LocalBackend::from_file(path)?) })
+        Ok(Self { backend: Box::new(local::LocalBackend::from_file(path)?), limit: 1000 })
+    }
+
+    pub fn with_limit(mut self, limit: usize) -> Self {
+        self.limit = limit;
+        self
     }
 
     pub fn literal_properties(&self, uri: &NamedNode) -> Result<Vec<(NamedNode, Literal)>> {
+        let limit = self.limit;
         let q = format!(
-            "SELECT ?p ?o WHERE {{ <{}> ?p ?o . FILTER(isLiteral(?o)) }} LIMIT {LIMIT}",
+            "SELECT ?p ?o WHERE {{ <{}> ?p ?o . FILTER(isLiteral(?o)) }} LIMIT {limit}",
             uri.as_str()
         );
         let result = self.backend.run_query(&q)?;
@@ -54,8 +59,9 @@ impl SparqlClient {
     }
 
     pub fn outgoing_links(&self, uri: &NamedNode) -> Result<Vec<(NamedNode, NamedNode)>> {
+        let limit = self.limit;
         let q = format!(
-            "SELECT ?p ?o WHERE {{ <{}> ?p ?o . FILTER(isIRI(?o)) }} LIMIT {LIMIT}",
+            "SELECT ?p ?o WHERE {{ <{}> ?p ?o . FILTER(isIRI(?o)) }} LIMIT {limit}",
             uri.as_str()
         );
         let result = self.backend.run_query(&q)?;
@@ -68,8 +74,9 @@ impl SparqlClient {
     }
 
     pub fn incoming_links(&self, uri: &NamedNode) -> Result<Vec<(NamedNode, NamedNode)>> {
+        let limit = self.limit;
         let q = format!(
-            "SELECT ?s ?p WHERE {{ ?s ?p <{}> . FILTER(isIRI(?s)) }} LIMIT {LIMIT}",
+            "SELECT ?s ?p WHERE {{ ?s ?p <{}> . FILTER(isIRI(?s)) }} LIMIT {limit}",
             uri.as_str()
         );
         let result = self.backend.run_query(&q)?;
@@ -82,8 +89,9 @@ impl SparqlClient {
     }
 
     pub fn as_predicate(&self, uri: &NamedNode) -> Result<Vec<(NamedNode, Term)>> {
+        let limit = self.limit;
         let q = format!(
-            "SELECT ?s ?o WHERE {{ ?s <{}> ?o . FILTER(isIRI(?s)) }} LIMIT {LIMIT}",
+            "SELECT ?s ?o WHERE {{ ?s <{}> ?o . FILTER(isIRI(?s)) }} LIMIT {limit}",
             uri.as_str()
         );
         let result = self.backend.run_query(&q)?;
@@ -96,11 +104,12 @@ impl SparqlClient {
     }
 
     pub fn all_types(&self) -> Result<Vec<NamedNode>> {
+        let limit = self.limit;
         let q = format!(
             "SELECT DISTINCT ?x WHERE {{ \
              ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?x . \
              FILTER(isIRI(?x)) \
-             }} ORDER BY ?x LIMIT {LIMIT}"
+             }} ORDER BY ?x LIMIT {limit}"
         );
         let result = self.backend.run_query(&q)?;
         Ok(result.rows.iter().filter_map(|row| {
@@ -132,12 +141,13 @@ impl SparqlClient {
     }
 
     pub fn search_resources(&self, term: &str) -> Result<Vec<(NamedNode, NamedNode, String)>> {
+        let limit = self.limit;
         let escaped = term.replace('\\', "\\\\").replace('"', "\\\"");
         let q = format!(
             "SELECT DISTINCT ?s ?p ?o WHERE {{ \
              ?s ?p ?o . \
              FILTER(isLiteral(?o) && CONTAINS(LCASE(STR(?o)), LCASE(\"{escaped}\"))) \
-             }} LIMIT {LIMIT}"
+             }} LIMIT {limit}"
         );
         let result = self.backend.run_query(&q)?;
         Ok(result.rows.iter().filter_map(|row| {

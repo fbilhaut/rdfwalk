@@ -29,11 +29,15 @@ struct Args {
     #[cfg(feature = "local")]
     #[arg(long, conflicts_with = "endpoint")]
     local: Option<String>,
+    /// Maximum number of rows returned per query (default: 1000)
+    #[arg(long, default_value = "1000")]
+    limit: usize,
 }
 
 fn main() -> Result<()> {
     let args = Args::parse();
     let start_uri = args.start_uri.clone();
+    let limit = args.limit;
 
     // Build the client before entering the TUI so that:
     // - a loading notice can be printed on the normal terminal for local files
@@ -54,6 +58,8 @@ fn main() -> Result<()> {
         Some(ep) => SparqlClient::remote(ep),
         None => anyhow::bail!("a SPARQL endpoint URL is required"),
     };
+
+    let client = client.with_limit(limit);
 
     enable_raw_mode()?;
     let mut stdout = io::stdout();
