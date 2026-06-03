@@ -22,13 +22,38 @@ use std::io;
 #[command(name = "rdfwalk", about = "TUI browser for RDF data via SPARQL")]
 struct Args {
     /// SPARQL endpoint URL
-    endpoint: String,
+    endpoint: Option<String>,
     /// Optional starting URI
     start_uri: Option<String>,
+    /// Local RDF file (requires --features local)
+    #[cfg(feature = "local")]
+    #[arg(long, conflicts_with = "endpoint")]
+    local: Option<String>,
 }
 
 fn main() -> Result<()> {
     let args = Args::parse();
+    let start_uri = args.start_uri.clone();
+
+    // Build the client before entering the TUI so that:
+    // - a loading notice can be printed on the normal terminal for local files
+    // - errors are reported without the TUI getting in the way
+    #[cfg(feature = "local")]
+    let client = {
+        if let (None, Some(path)) = (&args.endpoint, &args.local) {
+            eprintln!("Loading {}…", path);
+        }
+        match (args.endpoint, args.local) {
+            (Some(ep), _) => SparqlClient::remote(ep),
+            (None, Some(path)) => SparqlClient::local(&path)?,
+            _ => anyhow::bail!("provide a SPARQL endpoint URL or --local <file>"),
+        }
+    };
+    #[cfg(not(feature = "local"))]
+    let client = match args.endpoint {
+        Some(ep) => SparqlClient::remote(ep),
+        None => anyhow::bail!("a SPARQL endpoint URL is required"),
+    };
 
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -36,7 +61,7 @@ fn main() -> Result<()> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let result = run(&mut terminal, args);
+    let result = run(&mut terminal, client, start_uri);
 
     disable_raw_mode()?;
     execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
@@ -45,11 +70,10 @@ fn main() -> Result<()> {
     result
 }
 
-fn run(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, args: Args) -> Result<()> {
-    let client = SparqlClient::new(args.endpoint);
+fn run(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, client: SparqlClient, start_uri: Option<String>) -> Result<()> {
     let mut app = App::new(client);
 
-    if let Some(uri_str) = args.start_uri {
+    if let Some(uri_str) = start_uri {
         match NamedNode::new(uri_str) {
             Ok(uri) => app.navigate_to(uri),
             Err(e) => app.status = format!("Invalid URI: {}", e),

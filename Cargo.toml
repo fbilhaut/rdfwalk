@@ -11,14 +11,22 @@ homepage = "https://github.com/fbilhaut/rdfwalk"
 repository = "https://github.com/fbilhaut/rdfwalk"
 documentation = "https://docs.rs/rdfwalk/"
 
+[features]
+default = ["local"]
+local = ["dep:spareval", "dep:spargebra", "dep:oxrdfio"]
+
 [dependencies]
 ratatui = "0.29"
 crossterm = "0.28"
-oxrdf = "0.2"
-sparesults = "0.2"
 reqwest = { version = "0.12", features = ["blocking"] }
 clap = { version = "4", features = ["derive"] }
 anyhow = "1"
 confy = "0.6"
 serde = { version = "1", features = ["derive"] }
 arboard = "3"
+oxrdf = "0.2"
+sparesults = "0.2"
+spareval = { version = "0.1", optional = true }
+spargebra = { version = "0.3", optional = true }
+oxrdfio  = { version = "0.1", optional = true }
+
