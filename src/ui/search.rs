@@ -17,7 +17,8 @@ pub fn render(f: &mut Frame, app: &App, area: Rect) {
         .constraints([Constraint::Length(3), Constraint::Min(3)])
         .split(area);
 
-    widgets::text_input(f, &app.search_input, app.search_mode_input, " Search literals ", chunks[0]);
+    let cursor = if app.search_mode_input { Some(app.search_cursor) } else { None };
+    widgets::text_input(f, &app.search_input, cursor, app.search_mode_input, " Search literals ", chunks[0]);
 
     let result_block = Block::default()
         .title(" Results (resource  │  property  │  matched value) ")

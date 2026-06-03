@@ -2,7 +2,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, ListState},
+    widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Wrap},
     Frame,
 };
 
@@ -13,15 +13,31 @@ use super::widgets;
 pub fn render(f: &mut Frame, app: &App, area: Rect) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Length(5), Constraint::Min(3)])
+        .constraints([Constraint::Length(8), Constraint::Min(3)])
         .split(area);
 
-    widgets::text_input(f, &app.sparql_input, app.sparql_mode_input, " SPARQL Query ", chunks[0]);
+    let cursor = if app.sparql_mode_input { Some(app.sparql_cursor) } else { None };
+    widgets::text_input(f, &app.sparql_input, cursor, app.sparql_mode_input, " SPARQL Query ", chunks[0]);
 
     let vars_title = app.sparql_result.as_ref().map(|r| {
         let names: Vec<String> = r.variables.iter().map(|v| format!("?{}", v)).collect();
         format!(" Results: {} ", names.join("  "))
     }).unwrap_or_else(|| " Results ".into());
+
+    // Show error panel when the last query failed
+    if let Some(ref err) = app.sparql_error {
+        let block = Block::default()
+            .title(" Error ")
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(Color::Red));
+        let inner = block.inner(chunks[1]);
+        f.render_widget(block, chunks[1]);
+        let para = Paragraph::new(err.as_str())
+            .style(Style::default().fg(Color::Red))
+            .wrap(Wrap { trim: false });
+        f.render_widget(para, inner);
+        return;
+    }
 
     let result_block = Block::default()
         .title(vars_title)

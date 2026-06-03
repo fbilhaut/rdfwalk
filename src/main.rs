@@ -164,6 +164,22 @@ fn run(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, client: SparqlClie
                     (View::Sparql, KeyCode::Backspace, _) if app.sparql_mode_input => app.sparql_backspace(),
                     (View::Sparql, KeyCode::Left, _) if app.sparql_mode_input => app.sparql_cursor_left(),
                     (View::Sparql, KeyCode::Right, _) if app.sparql_mode_input => app.sparql_cursor_right(),
+                    (View::Sparql, KeyCode::Char('u'), KeyModifiers::CONTROL) if app.sparql_mode_input => app.sparql_clear(),
+                    (View::Sparql, KeyCode::Char('c'), KeyModifiers::CONTROL) if app.sparql_mode_input => {
+                        match arboard::Clipboard::new().and_then(|mut cb| cb.set_text(&app.sparql_input)) {
+                            Ok(_) => app.status = "Copied".into(),
+                            Err(e) => app.status = format!("Clipboard error: {}", e),
+                        }
+                    }
+                    (View::Sparql, KeyCode::Char('v'), KeyModifiers::CONTROL) if app.sparql_mode_input => {
+                        match arboard::Clipboard::new().and_then(|mut cb| cb.get_text()) {
+                            Ok(text) => {
+                                app.sparql_input.insert_str(app.sparql_cursor, &text);
+                                app.sparql_cursor += text.len();
+                            }
+                            Err(e) => app.status = format!("Clipboard error: {}", e),
+                        }
+                    }
                     (View::Sparql, KeyCode::Up, _) if !app.sparql_mode_input => app.sparql_result_up(),
                     (View::Sparql, KeyCode::Down, _) if !app.sparql_mode_input => app.sparql_result_down(),
                     (View::Sparql, KeyCode::Enter, _) if !app.sparql_mode_input => app.sparql_activate(),

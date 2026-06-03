@@ -34,12 +34,14 @@ pub struct App {
 
     // Types state
     pub types_list: Vec<NamedNode>,
+    pub types_error: Option<String>,
     pub types_selection: usize,
 
     // SPARQL state
     pub sparql_input: String,
     pub sparql_cursor: usize,
     pub sparql_result: Option<SparqlResult>,
+    pub sparql_error: Option<String>,
     pub sparql_selection: usize,
     pub sparql_mode_input: bool,
 
@@ -71,10 +73,12 @@ impl App {
             history: Vec::new(),
             history_pos: 0,
             types_list: Vec::new(),
+            types_error: None,
             types_selection: 0,
             sparql_input: String::new(),
             sparql_cursor: 0,
             sparql_result: None,
+            sparql_error: None,
             sparql_selection: 0,
             sparql_mode_input: true,
             search_input: String::new(),
@@ -93,10 +97,15 @@ impl App {
         match self.client.all_types() {
             Ok(types) => {
                 self.types_list = types.clone();
+                self.types_error = None;
                 self.fetch_labels_for_nodes(&types);
                 self.status = format!("{} types found", self.types_list.len());
             }
-            Err(e) => self.status = format!("Error: {}", e),
+            Err(e) => {
+                self.types_list.clear();
+                self.types_error = Some(format!("{:#}", e));
+                self.status = "Error loading types".into();
+            }
         }
         Ok(())
     }
@@ -281,6 +290,15 @@ impl App {
         }
     }
 
+    pub fn sparql_clear(&mut self) {
+        self.sparql_input.clear();
+        self.sparql_cursor = 0;
+        self.sparql_result = None;
+        self.sparql_error = None;
+        self.sparql_mode_input = true;
+        self.status = String::new();
+    }
+
     pub fn sparql_run(&mut self) {
         let q = self.sparql_input.trim().to_string();
         if q.is_empty() { return; }
@@ -293,11 +311,14 @@ impl App {
                     variables: result.variables,
                     rows: result.rows,
                 });
+                self.sparql_error = None;
                 self.sparql_selection = 0;
                 self.status = format!("{} rows", count);
             }
             Err(e) => {
-                self.status = format!("Query error: {}", e);
+                self.sparql_result = None;
+                self.sparql_error = Some(format!("{:#}", e));
+                self.status = "Query error".into();
                 self.sparql_mode_input = true;
             }
         }

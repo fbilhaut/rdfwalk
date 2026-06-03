@@ -2,7 +2,7 @@ use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, ListState},
+    widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Wrap},
     Frame,
 };
 
@@ -10,6 +10,22 @@ use crate::app::App;
 
 
 pub fn render(f: &mut Frame, app: &App, area: Rect) {
+    if let Some(ref err) = app.types_error {
+        let block = Block::default()
+            .title(" Error ")
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(Color::Red));
+        let inner = block.inner(area);
+        f.render_widget(block, area);
+        f.render_widget(
+            Paragraph::new(err.as_str())
+                .style(Style::default().fg(Color::Red))
+                .wrap(Wrap { trim: false }),
+            inner,
+        );
+        return;
+    }
+
     let block = Block::default().title(" Types ").borders(Borders::ALL);
     let inner = block.inner(area);
     f.render_widget(block, area);
