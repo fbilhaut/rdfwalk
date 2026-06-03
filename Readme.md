@@ -1,6 +1,6 @@
 # rdfwalk
 
-A terminal UI for browsing RDF data through a SPARQL endpoint.
+A terminal UI for browsing RDF data, either through a remote SPARQL endpoint or from a local RDF file.
 
 ![demo](demo/demo.gif)
 
@@ -10,11 +10,25 @@ A terminal UI for browsing RDF data through a SPARQL endpoint.
 cargo install rdfwalk
 ```
 
+For local file support, enable the `local` feature:
+
+```
+cargo install rdfwalk --features local
+```
+
 ## Usage
 
+**Remote mode** — query a SPARQL endpoint:
 ```
 rdfwalk <endpoint> [start-uri]
 ```
+
+**Local mode** — browse a local RDF file (requires `--features local`):
+```
+rdfwalk --local <file> [start-uri]
+```
+
+Supported file formats: NTriples (`.nt`), Turtle (`.ttl`), N3 (`.n3`), RDF/XML (`.rdf`, `.xml`).
 
 If no starting URI is given, the tool opens on the Types view. If a URI is given, it opens directly on that resource in the Browser view.
 
@@ -101,3 +115,8 @@ Literals are shown without quotes. The datatype or language tag is displayed in 
 - [reqwest](https://github.com/seanmonstar/reqwest) — HTTP client
 - [confy](https://github.com/rust-cli/confy) — config file management
 - [arboard](https://github.com/1Password/arboard) — clipboard access
+
+With `--features local`:
+- [spareval](https://github.com/oxigraph/oxigraph/tree/main/lib/spareval) — in-memory SPARQL evaluation
+- [spargebra](https://github.com/oxigraph/oxigraph/tree/main/lib/spargebra) — SPARQL query parser
+- [oxrdfio](https://github.com/oxigraph/oxigraph/tree/main/lib/oxrdfio) — RDF file parsing
