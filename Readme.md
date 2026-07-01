@@ -86,6 +86,13 @@ Editor keybindings (input mode):
 
 If a query fails, the full error message is displayed in the results panel.
 
+Once results are shown, `Tab` moves focus to the results list, from which they can be exported to a file in the current directory (named `rdfwalk-export-<timestamp>.<ext>`):
+
+| Key | Action |
+|-----|--------|
+| `e` | Export results as CSV ([SPARQL Query Results CSV Format](https://www.w3.org/TR/sparql11-results-csv-tsv/)) |
+| `j` | Export results as JSON ([SPARQL Query Results JSON Format](https://www.w3.org/TR/sparql11-results-json/)) |
+
 ### Search
 
 A literal text search. Type a string and press `Enter` to find all triples whose object literal contains that string, case-insensitive. Results show the matching resource, property, and matched value. Pressing `Enter` on a result navigates to the resource.

@@ -8,7 +8,7 @@ pub fn render(f: &mut Frame, app: &App, area: Rect) {
         View::Types     => "[S]PARQL  [F]ind  [M]arks  [↑/↓] Navigate  [Enter] Browse  [Q]uit",
         View::Sparql if app.sparql_mode_input
                         => "[Esc] Browser  [Enter] Run  [Tab] Results  [Ctrl+U] Clear  [Ctrl+C] Copy  [Ctrl+V] Paste",
-        View::Sparql    => "[Tab] Input  [↑/↓] Navigate  [Enter] Open  [Esc/B] Browser  [Q]uit",
+        View::Sparql    => "[Tab] Input  [↑/↓] Navigate  [Enter] Open  [e] Export CSV  [j] Export JSON  [Esc/B] Browser  [Q]uit",
         View::Search if app.search_mode_input
                         => "[Esc] Browser  [Enter] Search  [Tab] Results",
         View::Search    => "[Tab] Input  [↑/↓] Navigate  [Enter] Browse  [Esc/B] Browser  [Q]uit",

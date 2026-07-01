@@ -349,6 +349,23 @@ impl App {
         }
     }
 
+    pub fn sparql_export(&mut self, format: sparesults::QueryResultsFormat) {
+        let Some(result) = &self.sparql_result else { return };
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+        let path = std::path::PathBuf::from(format!("rdfwalk-export-{timestamp}.{}", format.file_extension()));
+        let outcome = std::fs::File::create(&path)
+            .map(std::io::BufWriter::new)
+            .map_err(anyhow::Error::from)
+            .and_then(|w| crate::rdf::export::write_solutions(w, format, &result.variables, &result.rows));
+        self.status = match outcome {
+            Ok(()) => format!("Exported to {}", path.display()),
+            Err(e) => format!("Export error: {:#}", e),
+        };
+    }
+
     pub fn search_push_char(&mut self, c: char) {
         self.search_input.insert(self.search_cursor, c);
         self.search_cursor += c.len_utf8();

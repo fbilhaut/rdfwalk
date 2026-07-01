@@ -189,6 +189,10 @@ fn run(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, client: SparqlClie
                     (View::Sparql, KeyCode::Up, _) if !app.sparql_mode_input => app.sparql_result_up(),
                     (View::Sparql, KeyCode::Down, _) if !app.sparql_mode_input => app.sparql_result_down(),
                     (View::Sparql, KeyCode::Enter, _) if !app.sparql_mode_input => app.sparql_activate(),
+                    (View::Sparql, KeyCode::Char('e'), KeyModifiers::NONE) if !app.sparql_mode_input =>
+                        app.sparql_export(sparesults::QueryResultsFormat::Csv),
+                    (View::Sparql, KeyCode::Char('j'), KeyModifiers::NONE) if !app.sparql_mode_input =>
+                        app.sparql_export(sparesults::QueryResultsFormat::Json),
 
                     // Bookmarks
                     (View::Bookmarks, KeyCode::Up, _) => app.bookmarks_select_up(),
