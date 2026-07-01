@@ -25,11 +25,11 @@ struct Args {
     endpoint: Option<String>,
     /// Optional starting URI
     start_uri: Option<String>,
-    /// Local RDF file (requires --features local)
+    /// Local RDF file
     #[cfg(feature = "local")]
     #[arg(long, conflicts_with = "endpoint")]
     local: Option<String>,
-    /// Maximum number of rows returned per query (default: 1000)
+    /// Maximum number of rows returned per query
     #[arg(long, default_value = "1000")]
     limit: usize,
 }
